@@ -13,14 +13,14 @@ Currently, it contains several packages:
 
 - **project** - Including kaggle competitions. Includings:
 
-Kaggle Web Traffic Prediction (https://www.kaggle.com/robikscube/tutorial-time-series-forecasting-with-xgboost): Since my personal computer can not run all data set. I just pick up serveral traffic sequences to test our models.
+    Kaggle Web Traffic Prediction (https://www.kaggle.com/robikscube/tutorial-time-series-forecasting-with-xgboost): Since my personal computer can not run all data set. I just pick up serveral traffic sequences to test our models.
 
 - **util** - This package contains several utilize modules that will be used by other modules. Includings:
 
-linear_algebra_util.py - some useful method for math
+    linear_algebra_util.py - some useful method for math
 
-logger_util.py - logger util module
+    logger_util.py - logger util module
 
-metric_util.py - some methods for evaluation metric algorithms
+    metric_util.py - some methods for evaluation metric algorithms
 
-plot_util.py - some methods that will be used to plot result
+    plot_util.py - some methods that will be used to plot result
