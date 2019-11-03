@@ -5,6 +5,9 @@ This module contains several method about linear algebra
 """
 
 import numpy as np
+from util.logger_util import get_logger
+
+logger = get_logger()
 
 
 def normalize(input_array, return_mean_and_std=True):
@@ -15,6 +18,10 @@ def normalize(input_array, return_mean_and_std=True):
     :param return_mean_and_std: whether to return mean and std
     :return normalized data:
     """
+
+    if len(input_array) == 1:
+        logger.warning(f'dims of input data should be 2. currently is {input_array.shape}')
+        input_array = np.expand_dims(input_array, -1)
 
     mean = np.mean(input_array, axis=0)
     std = np.std(input_array, ddof=1, axis=0)

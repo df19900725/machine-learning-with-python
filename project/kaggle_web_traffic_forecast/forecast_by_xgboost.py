@@ -23,7 +23,7 @@ def evaluate_by_raw_data(input_df):
     raw_values = input_df.values
 
     X = np.stack(make_time_features(input_df.index), axis=-1)
-    y = np.expand_dims(raw_values, -1)
+    y = raw_values
 
     X_train, X_test, y_train, y_test = split_time_series_data(X, y, test_length=100)
 

@@ -6,7 +6,11 @@ This module is used to make various features for data set
 
 import numpy as np
 from pandas import DatetimeIndex
+
 from util.linear_algebra_util import normalize
+from util.logger_util import get_logger
+
+logger = get_logger()
 
 
 def split_time_series_data(input_x, input_y, test_length: int):
@@ -30,6 +34,10 @@ def log1p_and_normalize_value(input_values):
     :param input_values:
     :return result, mean ,std
     """
+    if len(input_values.shape) == 1:
+        logger.warning(f'dims of input data should be 2. currently is {input_values.shape}')
+        input_values = np.expand_dims(input_values, -1)
+
     return normalize(np.log1p(input_values))
 
 

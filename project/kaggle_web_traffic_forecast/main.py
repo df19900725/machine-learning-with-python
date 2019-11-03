@@ -79,7 +79,7 @@ if __name__ == '__main__':
                                   verbose=False, max_iter=1000, shuffle=True)
     mlp_regression.fit(X_train, np.squeeze(y_train))
     mlp_res = np.expand_dims(recover_log1p_and_normalize_value(mlp_regression.predict(X_test), mean, std), -1)
-    res['SciKitLearn_MLP_Predict'] = mlp_res
+    # res['SciKitLearn_MLP_Predict'] = mlp_res
     res_values.append(mlp_res)
     models.append(mlp_regression)
 
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     keras_deep_mlp.fit(X_train, y_train, epochs=100, batch_size=128, validation_split=0.1, verbose=False,
                        callbacks=[es])
     keras_deep_mlp_res = recover_log1p_and_normalize_value(keras_deep_mlp.predict(X_test), mean, std)
-    res['Keras_MLP'] = keras_deep_mlp_res
+    # res['Keras_MLP'] = keras_deep_mlp_res
     res_values.append(keras_deep_mlp_res)
     models.append(keras_deep_mlp)
 
@@ -123,7 +123,7 @@ if __name__ == '__main__':
                                    callbacks=[es])
     keras_deep_mlp_simple_norm_res = recover_log1p_and_normalize_value(keras_deep_mlp_simple_norm.predict(X_test), mean,
                                                                        std)
-    res['Keras_MLP_Simple_Norm'] = keras_deep_mlp_simple_norm_res
+    # res['Keras_MLP_Simple_Norm'] = keras_deep_mlp_simple_norm_res
     res_values.append(keras_deep_mlp_simple_norm_res)
     models.append(keras_deep_mlp_simple_norm)
 
@@ -165,5 +165,5 @@ if __name__ == '__main__':
 
     # plot the result
     plot_regress_predict(y_test, plot_result, plot_labels,
-                         # y_train=recover_log1p_and_normalize_value(y_train, mean, std),
+                         y_train=recover_log1p_and_normalize_value(y_train, mean, std),
                          title=f'Kaggle Web Traffic Forecast - {index_name}')
