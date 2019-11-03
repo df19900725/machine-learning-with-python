@@ -7,15 +7,15 @@ Currently, it contains several packages:
 
 - **data** - The package that contains load different data set methods.
 
-**model** - This pakcage provides some customer models
+- **model** - This pakcage provides some customer models
 
-**preprocess** - This package contains several modules including feature engineering
+- **preprocess** - This package contains several modules including feature engineering
 
-**project** - Including kaggle competitions. Includings:
+- **project** - Including kaggle competitions. Includings:
 
 Kaggle Web Traffic Prediction (https://www.kaggle.com/robikscube/tutorial-time-series-forecasting-with-xgboost): Since my personal computer can not run all data set. I just pick up serveral traffic sequences to test our models.
 
-**util** - This package contains several utilize modules that will be used by other modules. Includings:
+- **util** - This package contains several utilize modules that will be used by other modules. Includings:
 
 linear_algebra_util.py - some useful method for math
 
