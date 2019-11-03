@@ -14,6 +14,9 @@ Currently, it contains several packages:
 - **project** - Including kaggle competitions. Includings:
 
     Kaggle Web Traffic Prediction (https://www.kaggle.com/robikscube/tutorial-time-series-forecasting-with-xgboost): Since my personal computer can not run all data set. I just pick up serveral traffic sequences to test our models.
+    
+    Sample Result:
+    ![kaggle-web-traffic-predict-result-sample](http://www.datalearner.com/resources/blog_images/5495455d-bb57-4d6d-8711-aef503e97ed8.jpg)
 
 - **util** - This package contains several utilize modules that will be used by other modules. Includings:
 
