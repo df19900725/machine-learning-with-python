@@ -5,6 +5,7 @@ This module is used to make various features for data set
 """
 
 import numpy as np
+import pandas as pd
 from pandas import DatetimeIndex
 
 from util.linear_algebra_util import normalize
@@ -96,3 +97,45 @@ def make_time_features_with_encoding(input_time: DatetimeIndex):
         encoding_res.append(np.sin(time_feature))
 
     return encoding_res
+
+
+def lag_indexes(begin, end, lagged_time_list=None):
+    """
+    This method compute lagged date for give time range.
+    Link: https://github.com/Arturus/kaggle-web-traffic/blob/master/make_features.py
+    :param begin: begin time
+    :param end: end time
+    :param lagged_time_list: it is a list of time point that will be computed. For example, [1,3] means
+                             one day ago and three days ago time point. Currently time unit is days.
+                             Default value is [7, 30, 60]
+    :return lagged date
+    """
+    if lagged_time_list is None:
+        lagged_time_list = [7, 30, 60]
+    dr = pd.date_range(begin, end, freq='D')
+    base_index = pd.Series(np.arange(0, len(dr)), index=dr)
+
+    def lag(offset):
+        dates = dr - offset
+        return pd.Series(data=base_index.reindex(dates).fillna(-1).astype(np.int16).values, index=dr)
+
+    return [lag(pd.DateOffset(days=m)) for m in lagged_time_list]
+
+
+def get_lagged_time(input_values, cropped_lags):
+    """
+    This method return the lagged values for each sequence
+    :param input_values: raw sequence values
+    :param cropped_lags: [sequence_length, time_lagged]
+    :return lagged values:
+    """
+    lag_mask = cropped_lags < 0
+    # Convert -1 to 0 for gather(), it don't accept anything exotic
+    cropped_lags = np.maximum(cropped_lags, 0)
+    # Translate lag indexes to hit values
+    lagged_hit = np.take(input_values, cropped_lags)
+    # Convert masked (see above) or NaN lagged hits to zeros
+    lag_zeros = np.zeros_like(lagged_hit)
+    lagged_hit = np.where(lag_mask | np.isnan(lagged_hit), lag_zeros, lagged_hit)
+
+    return lagged_hit

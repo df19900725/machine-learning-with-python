@@ -4,53 +4,32 @@ This module will evaluate all methods together for kaggle web traffic forecast
 @Created Time: 2019/11/02 22:01
 """
 
-import numpy as np
-import xgboost as xgb
 import tensorflow as tf
+import xgboost as xgb
 from sklearn.neural_network import MLPRegressor
 
-from util.logger_util import get_logger
-from util.linear_algebra_util import normalize
+from project.kaggle_web_traffic_forecast.make_kaggle_web_traffic_features import *
 from data.kaggle_wikipedia_traffic import get_kaggle_sample_data
-from preprocess.features_engineering import log1p_and_normalize_value, make_time_features, \
-    make_time_features_with_encoding, split_time_series_data, recover_log1p_and_normalize_value
+from preprocess.features_engineering import log1p_and_normalize_value, recover_log1p_and_normalize_value
+from util.logger_util import get_logger
 from util.metric_util import smape
 from util.plot_util import plot_regress_predict
 
 logger = get_logger()
 
-
-def get_test_data(input_df, values):
-    X = np.stack(make_time_features(input_df.index), axis=-1)
-    y = values
-
-    return split_time_series_data(X, y, test_length=100)
-
-
-def get_test_data_with_simple_normalize(input_df, values):
-    X = normalize(np.stack(make_time_features(input_df.index), axis=-1))
-    y = values
-
-    return split_time_series_data(X, y, test_length=100)
-
-
-def get_test_data_with_encoding_feature(input_df, values):
-    X = np.stack(make_time_features_with_encoding(input_df.index), axis=-1)
-    y = values
-
-    return split_time_series_data(X, y, test_length=100)
-
-
 if __name__ == '__main__':
     sample_df, index_name = get_kaggle_sample_data()
     raw_values, mean, std = log1p_and_normalize_value(np.expand_dims(sample_df.values, -1))
     print(f'raw values shape:{raw_values.shape}')
+    predict_length = 50
 
-    X_train, X_test, y_train, y_test = get_test_data(sample_df, raw_values)
-    X_train_simple_norm, X_test_simple_norm, y_train_simple_norm, y_test_simple_norm = get_test_data_with_simple_normalize(
-        sample_df, raw_values)
-    X_train_encoding, X_test_encoding, y_train_encoding, y_test_encoding = get_test_data_with_encoding_feature(
-        sample_df, raw_values)
+    X_train, X_test, y_train, y_test = get_raw_data(sample_df, raw_values, predict_length)
+    X_train_simple_norm, X_test_simple_norm, y_train_simple_norm, y_test_simple_norm = get_data_with_feature_normalized(
+        sample_df, raw_values, predict_length)
+    X_train_encoding, X_test_encoding, y_train_encoding, y_test_encoding = get_data_with_feature_encoding(
+        sample_df, raw_values, predict_length)
+    X_train_with_lagged, X_test_with_lagged, y_train_with_lagged, y_test_with_lagged = get_data_with_feature_encoding(
+        sample_df, raw_values, predict_length)
 
     logger.info(f'X_train shape:{X_train.shape} y_train shape:{y_train.shape} '
                 f'X_test shape:{X_test.shape} y_test shape:{y_test.shape}')
@@ -148,6 +127,28 @@ if __name__ == '__main__':
     models.append(keras_encoding)
     res_values.append(keras_encoding_res)
     res['Keras_MLP_Feature_Encoding'] = keras_encoding_res
+
+    # ------------------------Deep Learning with encoding feature------------------------
+    logger.info(f'start to train customer keras deep learning model with lagged value featuare...')
+    keras_lagged_feature = tf.keras.Sequential()
+    keras_lagged_feature.add(
+        tf.keras.layers.Dense(10, input_shape=(X_train_encoding.shape[1],), activation=tf.keras.activations.relu))
+    keras_lagged_feature.add(tf.keras.layers.Dense(20, input_shape=(10,), activation=tf.keras.activations.relu))
+    keras_lagged_feature.add(tf.keras.layers.Dense(20, input_shape=(20,), activation=tf.keras.activations.relu))
+    keras_lagged_feature.add(tf.keras.layers.Dense(1, input_shape=(20,)))
+
+    keras_lagged_feature.compile(optimizer=tf.keras.optimizers.SGD(),  # Optimizer
+                           # Loss function to minimize
+                           loss=tf.keras.losses.mean_squared_error,
+                           # List of metrics to monitor
+                           metrics=[tf.keras.metrics.mean_squared_error])
+
+    keras_lagged_feature.fit(X_train_with_lagged, y_train_with_lagged, epochs=500, batch_size=32, validation_split=0.1,
+                       verbose=False)
+    keras_lagged_feature_res = recover_log1p_and_normalize_value(keras_lagged_feature.predict(X_test_with_lagged), mean, std)
+    models.append(keras_lagged_feature)
+    res_values.append(keras_lagged_feature_res)
+    res['Keras_MLP_lagged_feature'] = keras_lagged_feature_res
 
     # ------------------------Model fusion------------------------
     res_values = np.stack(res_values, axis=-1)
